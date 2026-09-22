@@ -128,7 +128,14 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
               autoComplete={isLogin ? "current-password" : "new-password"}
             />
           </div>
-
+          
+          {isLogin && (
+          <div className="-mt-2 text-right">
+            <Link href="/forgot-password" className="text-sm text-pen underline underline-offset-2">
+              {t.auth.forgotLink}
+            </Link>
+          </div>
+        )}
           {error && <p className="text-sm text-mark">{error}</p>}
           {info && <p className="text-sm text-pen">{info}</p>}
 
