@@ -17,15 +17,37 @@ export function StudentRow({ student, groups }: { student: any; groups: Group[] 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function save() {
+    async function save() {
     setBusy(true);
     setError(null);
+    const wasPending = student.status === "pending";
     const { error } = await createClient()
       .from("profiles")
       .update({ group_id: group || null, status })
       .eq("id", student.id);
-    if (error) setError(error.message);
-    else router.refresh();
+    if (error) {
+      setError(error.message);
+      setBusy(false);
+      return;
+    }
+
+    if (wasPending && status === "approved" && student.email) {
+      try {
+        const res = await fetch("/api/notify-approved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: student.email, name: student.full_name }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          alert("Не удалось отправить письмо: " + (body.error ?? res.status));
+        }
+      } catch (e: any) {
+        alert("Не удалось отправить письмо: " + e.message);
+      }
+    }
+
+    router.refresh();
     setBusy(false);
   }
 
