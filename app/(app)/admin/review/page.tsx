@@ -1,5 +1,6 @@
 import Link from "next/link";
 import EmptyState from "@/components/EmptyState";
+import ReviewFilters from "@/components/admin/ReviewFilters";
 import { fmtDateTime } from "@/lib/format";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
@@ -9,21 +10,38 @@ export async function generateMetadata() {
   return { title: t.titles.adminReview };
 }
 
-export default async function AdminReviewPage() {
+export default async function AdminReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ group?: string; from?: string; to?: string }>;
+}) {
+  const { group, from, to } = await searchParams;
   const { t, locale } = await getI18n();
   const P = t.admin.reviewPage;
 
   const supabase = await createClient();
 
-  const { data } = await supabase
-    .from("submissions")
-    .select("*, profiles(full_name, email), assignments(title, groups(name))")
-    .order("submitted_at", { ascending: false })
-    .limit(60);
-  const subs = data ?? [];
+  const [groupsRes, subsRes] = await Promise.all([
+    supabase.from("groups").select("id,name").order("created_at"),
+    (() => {
+      let query = supabase
+        .from("submissions")
+        .select("*, profiles(full_name, email), assignments!inner(title, group_id, groups(name))")
+        .order("submitted_at", { ascending: false })
+        .limit(200);
+      if (group) query = query.eq("assignments.group_id", group);
+      if (from) query = query.gte("submitted_at", `${from}T00:00:00`);
+      if (to) query = query.lte("submitted_at", `${to}T23:59:59`);
+      return query;
+    })(),
+  ]);
+
+  const groups = groupsRes.data ?? [];
+  const subs = subsRes.data ?? [];
+  const hasFilters = Boolean(group || from || to);
 
   const waiting = subs.filter((s: any) => s.status === "submitted");
-  const checked = subs.filter((s: any) => s.status === "graded").slice(0, 15);
+  const checked = subs.filter((s: any) => s.status === "graded").slice(0, 30);
 
   const row = (s: any) => (
     <li key={s.id}>
@@ -58,24 +76,36 @@ export default async function AdminReviewPage() {
     <>
       <h1 className="text-3xl font-medium tracking-tight">{t.titles.adminReview}</h1>
 
-      <section className="mt-8">
-        <h2 className="text-lg font-medium">
-          {waiting.length > 0 ? P.waitingCount(waiting.length) : P.waiting}
-        </h2>
-        {waiting.length === 0 ? (
-          <div className="mt-3">
-            <EmptyState title={P.allCheckedTitle} text={P.allCheckedText} />
-          </div>
-        ) : (
-          <ul className="ruled mt-3">{waiting.map(row)}</ul>
-        )}
-      </section>
+      <div className="mt-6">
+        <ReviewFilters groups={groups} />
+      </div>
 
-      {checked.length > 0 && (
-        <section className="mt-12">
-          <h2 className="text-lg font-medium">{P.recent}</h2>
-          <ul className="ruled mt-3">{checked.map(row)}</ul>
-        </section>
+      {hasFilters && subs.length === 0 ? (
+        <div className="mt-8">
+          <EmptyState title={P.noneFound} />
+        </div>
+      ) : (
+        <>
+          <section className="mt-8">
+            <h2 className="text-lg font-medium">
+              {waiting.length > 0 ? P.waitingCount(waiting.length) : P.waiting}
+            </h2>
+            {waiting.length === 0 ? (
+              <div className="mt-3">
+                <EmptyState title={P.allCheckedTitle} text={P.allCheckedText} />
+              </div>
+            ) : (
+              <ul className="ruled mt-3">{waiting.map(row)}</ul>
+            )}
+          </section>
+
+          {checked.length > 0 && (
+            <section className="mt-12">
+              <h2 className="text-lg font-medium">{P.recent}</h2>
+              <ul className="ruled mt-3">{checked.map(row)}</ul>
+            </section>
+          )}
+        </>
       )}
     </>
   );

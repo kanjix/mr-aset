@@ -349,6 +349,12 @@ export const kk: Dict = {
       student: "Оқушы",
       photosDeleted: "Фотолар жойылған.",
       photoAlt: "Жұмыс фотосы",
+      filterGroup: "Топ",
+      filterAllGroups: "Барлық топтар",
+      filterFrom: "Бастап",
+      filterTo: "Дейін",
+      filterReset: "Тазалау",
+      noneFound: "Осы сүзгілер бойынша ештеңе табылмады.",
       submittedLine: (title: string, group: string, date: string) =>
         `${title}, ${group} тобы, ${date} тапсырылды`,
     },

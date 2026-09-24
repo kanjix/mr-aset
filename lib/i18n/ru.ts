@@ -347,6 +347,12 @@ export const ru = {
       student: "Ученик",
       photosDeleted: "Фото удалены.",
       photoAlt: "Фото работы",
+      filterGroup: "Группа",
+      filterAllGroups: "Все группы",
+      filterFrom: "С даты",
+      filterTo: "По дату",
+      filterReset: "Сбросить",
+      noneFound: "Ничего не найдено по этим фильтрам.",
       submittedLine: (title: string, group: string, date: string) =>
         `${title}, группа ${group}, сдано ${date}`,
     },
