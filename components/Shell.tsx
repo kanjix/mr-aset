@@ -6,6 +6,16 @@ import LangSwitch from "./LangSwitch";
 import SignOutButton from "./SignOutButton";
 import { useT } from "./I18nProvider";
 import { site } from "@/lib/config";
+import {
+  IconHome,
+  IconLessons,
+  IconMaterials,
+  IconSupport,
+  IconProfile,
+  IconStudents,
+  IconAssignments,
+  IconReview,
+} from "./Icons";
 
 export default function Shell({
   role,
@@ -22,20 +32,23 @@ export default function Shell({
   const pathname = usePathname();
 
   const studentNav = [
-    { href: "/dashboard", label: t.shell.home },
-    { href: "/lessons", label: t.shell.lessons },
-    { href: "/materials", label: t.shell.materials },
-    { href: "/support", label: t.shell.support },
+    { href: "/dashboard", label: t.shell.home, Icon: IconHome },
+    { href: "/lessons", label: t.shell.lessons, Icon: IconLessons },
+    { href: "/materials", label: t.shell.materials, Icon: IconMaterials },
+    { href: "/support", label: t.shell.support, Icon: IconSupport },
   ];
   const adminNav = [
-    { href: "/admin", label: t.shell.students },
-    { href: "/admin/materials", label: t.shell.adminMaterials },
-    { href: "/admin/lessons", label: t.shell.adminLessons },
-    { href: "/admin/assignments", label: t.shell.adminAssignments },
-    { href: "/admin/review", label: t.shell.review },
+    { href: "/admin", label: t.shell.students, Icon: IconStudents },
+    { href: "/admin/materials", label: t.shell.adminMaterials, Icon: IconMaterials },
+    { href: "/admin/lessons", label: t.shell.adminLessons, Icon: IconLessons },
+    { href: "/admin/assignments", label: t.shell.adminAssignments, Icon: IconAssignments },
+    { href: "/admin/review", label: t.shell.review, Icon: IconReview },
   ];
   // Профиль — не в нижней панели вкладок (там и так тесно), а отдельной ссылкой.
-  const sidebarNav = role === "admin" ? [...adminNav, { href: "/profile", label: t.shell.profile }] : [...studentNav, { href: "/profile", label: t.shell.profile }];
+  const sidebarNav = [
+    ...(role === "admin" ? adminNav : studentNav),
+    { href: "/profile", label: t.shell.profile, Icon: IconProfile },
+  ];
   const tabNav = role === "admin" ? adminNav : studentNav;
   const home = role === "admin" ? "/admin" : "/dashboard";
 
@@ -64,12 +77,13 @@ export default function Shell({
               key={item.href}
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
-              className={`rounded-md px-3 py-2 text-[0.9375rem] transition-colors ${
+              className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[0.9375rem] transition-colors ${
                 isActive(item.href)
                   ? "bg-pen-soft font-medium text-pen"
                   : "text-ink hover:bg-pen-soft/60"
               }`}
             >
+              <item.Icon className="h-4 w-4 shrink-0" />
               {item.label}
             </Link>
           ))}
@@ -93,8 +107,11 @@ export default function Shell({
             <Link
               href="/profile"
               aria-current={isActive("/profile") ? "page" : undefined}
-              className={`btn btn-ghost btn-sm ${isActive("/profile") ? "text-pen" : ""}`}
+              className={`btn btn-ghost btn-sm flex items-center gap-1.5 ${
+                isActive("/profile") ? "text-pen" : ""
+              }`}
             >
+              <IconProfile className="h-4 w-4" />
               {t.shell.profile}
             </Link>
             <SignOutButton />
@@ -116,11 +133,12 @@ export default function Shell({
             key={item.href}
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
-            className={`px-1 py-3.5 text-center text-[0.8125rem] ${
+            className={`flex flex-col items-center gap-0.5 px-1 py-2.5 text-center text-[0.75rem] ${
               isActive(item.href) ? "font-medium text-pen" : "text-muted"
             }`}
           >
-            {item.label}
+            <item.Icon className="h-5 w-5" />
+            <span>{item.label}</span>
           </Link>
         ))}
       </nav>
