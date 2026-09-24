@@ -252,6 +252,11 @@ export const ru = {
       studentsPending: (n: number) => `Ученики, ждут подтверждения: ${n}`,
       noStudentsTitle: "Пока никто не зарегистрировался",
       noStudentsText: "Когда ученик оставит заявку на сайте, он появится здесь.",
+            tabPending: "Ждут подтверждения",
+      tabApproved: "Ученики",
+      noPendingTitle: "Заявок нет",
+      noPendingText: "Когда кто-то оставит заявку на сайте, она появится здесь.",
+      deleteStudentConfirm: "Удалить ученика полностью, вместе с аккаунтом? Это действие нельзя отменить.",
     },
     forms: {
       newGroup: "Новая группа",

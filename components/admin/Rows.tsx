@@ -10,6 +10,7 @@ type Group = { id: string; name: string };
 export function StudentRow({ student, groups }: { student: any; groups: Group[] }) {
   const t = useT();
   const R = t.admin.rows;
+  const P = t.admin.studentsPage;
   const router = useRouter();
   const pending = student.status === "pending";
   const [group, setGroup] = useState<string>(student.group_id ?? "");
@@ -17,7 +18,7 @@ export function StudentRow({ student, groups }: { student: any; groups: Group[] 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-    async function save() {
+  async function save() {
     setBusy(true);
     setError(null);
     const wasPending = student.status === "pending";
@@ -51,6 +52,29 @@ export function StudentRow({ student, groups }: { student: any; groups: Group[] 
     setBusy(false);
   }
 
+  async function remove() {
+    if (!confirm(P.deleteStudentConfirm)) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/delete-student", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: student.id }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? String(res.status));
+        setBusy(false);
+        return;
+      }
+      router.refresh();
+    } catch (e: any) {
+      setError(e.message);
+      setBusy(false);
+    }
+  }
+
   return (
     <li className="py-4">
       <div className="flex flex-wrap items-start justify-between gap-x-4">
@@ -61,7 +85,7 @@ export function StudentRow({ student, groups }: { student: any; groups: Group[] 
         {pending && <span className="text-sm text-mark">{R.pendingLabel}</span>}
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+      <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]">
         <select
           aria-label={t.common.group}
           className="input"
@@ -87,6 +111,9 @@ export function StudentRow({ student, groups }: { student: any; groups: Group[] 
         </select>
         <button type="button" className="btn" onClick={save} disabled={busy}>
           {pending ? R.approve : R.save}
+        </button>
+        <button type="button" className="btn btn-danger" onClick={remove} disabled={busy}>
+          {busy ? R.deleting : R.delete}
         </button>
       </div>
       {error && <p className="mt-2 text-sm text-mark">{error}</p>}
@@ -118,7 +145,6 @@ export function DeleteButton({
     setBusy(true);
     const supabase = createClient();
 
-    // Вместе с заданием удаляем фото сданных работ, чтобы не копились в хранилище.
     if (purgeSubmissions) {
       const { data } = await supabase.from("submissions").select("photo_paths").eq("assignment_id", id);
       const paths = (data ?? []).flatMap((r: any) => r.photo_paths ?? []);

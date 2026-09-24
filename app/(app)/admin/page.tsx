@@ -3,6 +3,7 @@ import { DeleteButton, StudentRow } from "@/components/admin/Rows";
 import { GroupForm } from "@/components/admin/Forms";
 import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
+import StudentsTabs from "@/components/admin/StudentsTabs";
 
 export async function generateMetadata() {
   const { t } = await getI18n();
@@ -52,21 +53,13 @@ export default async function AdminStudentsPage() {
         </div>
       </section>
 
-      <section className="mt-12">
-        <h2 className="text-lg font-medium">
-          {pendingCount > 0 ? P.studentsPending(pendingCount) : P.students}
-        </h2>
-        {students.length === 0 ? (
-          <div className="mt-3">
-            <EmptyState title={P.noStudentsTitle} text={P.noStudentsText} />
-          </div>
-        ) : (
-          <ul className="ruled mt-3">
-            {students.map((s: any) => (
-              <StudentRow key={s.id} student={s} groups={groups} />
-            ))}
-          </ul>
-        )}
+                  <section className="mt-12">
+        <h2 className="text-lg font-medium">{P.students}</h2>
+        <StudentsTabs
+          pending={students.filter((s: any) => s.status === "pending")}
+          approved={students.filter((s: any) => s.status !== "pending")}
+          groups={groups}
+        />
       </section>
     </>
   );

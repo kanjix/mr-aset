@@ -254,6 +254,11 @@ export const kk: Dict = {
       studentsPending: (n: number) => `Оқушылар, растауды күтіп тұр: ${n}`,
       noStudentsTitle: "Әзірге ешкім тіркелген жоқ",
       noStudentsText: "Оқушы сайтта өтінім қалдырғанда, ол осында пайда болады.",
+            tabPending: "Растауды күтуде",
+      tabApproved: "Оқушылар",
+      noPendingTitle: "Өтінімдер жоқ",
+      noPendingText: "Біреу сайтта өтінім қалдырғанда, ол осында пайда болады.",
+      deleteStudentConfirm: "Оқушыны аккаунтымен бірге толығымен жою керек пе? Бұл әрекетті қайтару мүмкін емес.",
     },
     forms: {
       newGroup: "Жаңа топ",
