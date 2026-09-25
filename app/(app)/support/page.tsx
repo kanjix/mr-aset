@@ -11,7 +11,6 @@ export default async function SupportPage() {
   const S = t.support;
 
   const links = [
-    { label: S.call, value: site.phone, href: `tel:${site.phone.replace(/[^+\d]/g, "")}` },
     { label: "WhatsApp", value: S.write, href: site.whatsapp },
     { label: "Telegram", value: S.write, href: site.telegram },
     { label: S.email, value: site.email, href: `mailto:${site.email}` },
