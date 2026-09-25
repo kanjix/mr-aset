@@ -328,6 +328,8 @@ export const ru = {
       upcoming: "Предстоящие",
       none: "Уроков в расписании нет.",
       past: "Прошедшие",
+      filterGroup: "Группа",
+      filterAllGroups: "Все группы",
     },
     assignmentsPage: {
       tasks: "Задания",

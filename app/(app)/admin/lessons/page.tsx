@@ -1,5 +1,6 @@
 import EmptyState from "@/components/EmptyState";
 import { LessonForm } from "@/components/admin/Forms";
+import LessonsFilter from "@/components/admin/LessonsFilter";
 import { DeleteButton } from "@/components/admin/Rows";
 import { fmtDateTime } from "@/lib/format";
 import { getI18n } from "@/lib/i18n/server";
@@ -10,7 +11,12 @@ export async function generateMetadata() {
   return { title: t.titles.adminLessons };
 }
 
-export default async function AdminLessonsPage() {
+export default async function AdminLessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ group?: string }>;
+}) {
+  const { group } = await searchParams;
   const { t, locale } = await getI18n();
   const P = t.admin.lessonsPage;
 
@@ -20,7 +26,8 @@ export default async function AdminLessonsPage() {
     supabase.from("lessons").select("*, groups(name)").order("starts_at", { ascending: true }),
   ]);
   const groups = groupsRes.data ?? [];
-  const lessons = lessonsRes.data ?? [];
+  const allLessons = lessonsRes.data ?? [];
+  const lessons = group ? allLessons.filter((l: any) => l.group_id === group) : allLessons;
 
   const cutoff = Date.now() - 2 * 60 * 60 * 1000;
   const upcoming = lessons.filter((l: any) => new Date(l.starts_at).getTime() >= cutoff);
@@ -48,16 +55,19 @@ export default async function AdminLessonsPage() {
 
       <div className="mt-8">
         {groups.length === 0 ? (
-          <EmptyState
-            title={t.common.createGroupFirstTitle}
-            text={t.common.createGroupFirstText}
-          />
+          <EmptyState title={t.common.createGroupFirstTitle} text={t.common.createGroupFirstText} />
         ) : (
           <LessonForm groups={groups} />
         )}
       </div>
 
-      <section className="mt-10">
+      {groups.length > 0 && (
+        <div className="mt-8 border-t border-rule pt-6">
+          <LessonsFilter groups={groups} />
+        </div>
+      )}
+
+      <section className="mt-8">
         <h2 className="text-lg font-medium">{P.upcoming}</h2>
         {upcoming.length === 0 ? (
           <p className="mt-3 text-muted">{P.none}</p>

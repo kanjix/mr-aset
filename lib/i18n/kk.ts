@@ -330,6 +330,8 @@ export const kk: Dict = {
       upcoming: "Алдағы сабақтар",
       none: "Кестеде сабақ жоқ.",
       past: "Өткен сабақтар",
+      filterGroup: "Топ",
+      filterAllGroups: "Барлық топтар",
     },
     assignmentsPage: {
       tasks: "Тапсырмалар",
