@@ -185,6 +185,7 @@ export const ru = {
     linkLater: "Ссылка появится позже",
     past: "Прошедшие",
     noGroupText: "Расписание появится после добавления.",
+    linkNotYet: "Ссылка откроется перед уроком",
   },
 
   materials: {

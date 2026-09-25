@@ -10,6 +10,8 @@ export async function generateMetadata() {
   return { title: t.titles.lessons };
 }
 
+const LINK_OPENS_BEFORE_MINUTES = 10;
+
 export default async function LessonsPage() {
   const profile = await getProfile();
   if (!profile) redirect("/login");
@@ -35,13 +37,46 @@ export default async function LessonsPage() {
   const { data } = await supabase.from("lessons").select("*").order("starts_at", { ascending: true });
   const lessons = data ?? [];
 
-  // Урок считается текущим ещё 2 часа после начала
-  const cutoff = Date.now() - 2 * 60 * 60 * 1000;
+  const now = Date.now();
+  const cutoff = now - 2 * 60 * 60 * 1000;
   const upcoming = lessons.filter((l: any) => new Date(l.starts_at).getTime() >= cutoff);
   const past = lessons
     .filter((l: any) => new Date(l.starts_at).getTime() < cutoff)
     .reverse()
     .slice(0, 8);
+
+  function renderLessonRow(l: any) {
+    const startsAt = new Date(l.starts_at).getTime();
+    const linkReady = now >= startsAt - LINK_OPENS_BEFORE_MINUTES * 60 * 1000;
+
+    let action;
+    if (l.meet_url && linkReady) {
+      action = (
+        <a
+          href={l.meet_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-sm shrink-0"
+        >
+          {t.dashboard.join}
+        </a>
+      );
+    } else if (l.meet_url) {
+      action = <span className="shrink-0 text-sm text-muted">{L.linkNotYet}</span>;
+    } else {
+      action = <span className="shrink-0 text-sm text-muted">{L.linkLater}</span>;
+    }
+
+    return (
+      <li key={l.id} className="flex items-center justify-between gap-4 py-4">
+        <div className="min-w-0">
+          <p className="font-medium">{l.title}</p>
+          <p className="text-sm text-muted">{fmtDateTime(l.starts_at, locale)}</p>
+        </div>
+        {action}
+      </li>
+    );
+  }
 
   return (
     <>
@@ -54,28 +89,7 @@ export default async function LessonsPage() {
             <EmptyState title={L.noneTitle} text={L.noneText} />
           </div>
         ) : (
-          <ul className="ruled mt-3">
-            {upcoming.map((l: any) => (
-              <li key={l.id} className="flex items-center justify-between gap-4 py-4">
-                <div className="min-w-0">
-                  <p className="font-medium">{l.title}</p>
-                  <p className="text-sm text-muted">{fmtDateTime(l.starts_at, locale)}</p>
-                </div>
-                {l.meet_url ? (
-                  <a
-                    href={l.meet_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-sm shrink-0"
-                  >
-                    {t.dashboard.join}
-                  </a>
-                ) : (
-                  <span className="shrink-0 text-sm text-muted">{L.linkLater}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <ul className="ruled mt-3">{upcoming.map(renderLessonRow)}</ul>
         )}
       </section>
 
